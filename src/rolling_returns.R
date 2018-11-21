@@ -1,5 +1,5 @@
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-source("../lib/download_index_tri.R", chdir=T)
+source("../library/download_index_tri.R", chdir=T)
 library(tidyverse)
 
 rolling_return = function(data, period, label) {

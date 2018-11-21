@@ -1,0 +1,92 @@
+---
+title: "Analyze Rolling Returns"
+output: html_notebook
+---
+
+\  
+
+*Rolling returns* provide a more realistic way of looking at investment returns. A ten-year rolling return would show you the best ten years and worst ten years you may have experienced by looking at the ten year periods not just starting with January, but also starting February 1, March 1, April 1, etc.
+
+The same investment that had a ten-year average annual return of 8% may have a best ten-year rolling return of 16% and a worst ten-year rolling return of -3%. If you are retiring, that means depending on the decade you retired into you could have experienced a 16% a year gain on your portfolio or a 3% a year loss. Rolling returns give you a more realistic idea of what might really happen to your money, depending on the particular ten years that you are invested.
+
+Source: [Rolling Returns vs Average Annual Returns](https://www.thebalance.com/rolling-returns-versus-average-annual-returns-2388654)
+
+\  
+
+#### Prepare environment
+Set working directory, import the required functions and libraries
+
+```{r}
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+source("../library/download_index_tri.R", chdir=T)
+library(tidyverse)
+```
+
+\  
+
+#### Prepare Raw Data
+
+Nifty family of indices are price index and hence reflects the returns one would earn if investment is made in the index portfolio. However, a price index does not consider the returns arising from dividend receipts. Only capital gains arising due to price movements of constituent stocks are indicated in a price index. Therefore, to get a true picture of returns, the dividends received from the constituent stocks also need to be factored in the index values. Such an index, which includes the dividends received, is called the Total Returns Index.
+
+Source: [Total Return Index](https://www.nseindia.com/products/content/equities/indices/total_returns_index.htm)
+
+\  
+
+Let's start by getting the required data, and writing a function that will help us process this data and calculate rolling returns. We'll be analyzing the following four NIFTY *total return indices*. 
+
+* [Nifty 50](https://nseindia.com/products/content/equities/indices/nifty_50.htm)
+* [Nifty Next 50](https://nseindia.com/products/content/equities/indices/nifty_next_50.htm)
+* [Nifty Midcap 100](https://nseindia.com/products/content/equities/indices/nifty_midcap_100.htm)
+* [Nifty Smallcap 100](https://nseindia.com/products/content/equities/indices/nifty_smallcap_100.htm)
+
+
+```{r}
+nifty_50 = download_index_tri("NIFTY 50")
+nifty_next_50 = download_index_tri("NIFTY NEXT 50")
+nifty_midcap_100 = download_index_tri("NIFTY MIDCAP 100")
+nifty_smallcap_100 = download_index_tri("NIFTY SMALLCAP 100")
+
+rolling_return = function(data, period, label) {
+  data %>%
+    group_by(y = year(date), m = month(date)) %>%
+    summarise(date = last(date), value = last(value)) %>%
+    ungroup %>%
+    select(-c(y, m)) %>%
+    mutate(m120 = ((value / lag(value, period)) ^ (12 / period) - 1) * 100) %>%
+    rename(!!label := m120) %>%
+    select(-value)
+}
+```
+
+\  
+
+#### Calulate Rolling Returns
+
+Next we use the function above and call it for each dataset to generate new variables that contain our calculated rolling returns.
+
+```{r}
+n50 = rolling_return(nifty_50, 120, "NIFTY 50 TRI")
+nn50 = rolling_return(nifty_next_50, 120, "NIFTY NEXT 50 TRI")
+nm100 = rolling_return(nifty_midcap_100, 120, "NIFTY MIDCAP 100 TRI")
+ns100 = rolling_return(nifty_smallcap_100, 120, "NIFTY SMALLCAP 100 TRI")
+```
+
+\  
+
+#### Combine and plot
+
+Next we will combine the above four into a single data set and plot the rolling returns for comparison.
+
+```{r warning=FALSE}
+n50 %>%
+  left_join(nn50, by=c("date")) %>%
+  left_join(nm100, by=c("date")) %>%
+  left_join(ns100, by=c("date")) %>%
+  gather(index, ann_return, -date) %>%
+  ggplot(aes(x=date, y=ann_return, color=index)) +
+  geom_line() +
+  ggtitle("10y rolling returns") + 
+  theme(legend.position="bottom",legend.direction="horizontal")
+```
+
+\  
