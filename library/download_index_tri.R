@@ -2,6 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(glue)
 library(rvest)
+library(progress)
 
 parse = function(text){
   dates = str_extract_all(text, "(?<=\")(\\d+-\\w+-\\d+)(?=\")")[[1]]
@@ -34,7 +35,10 @@ download_index_tri = function(index) {
   periods = ceiling((end - start) %>% as.numeric() / 364)
   
   df = tibble(date = as_date(NA), value = numeric())  
+  pb = progress_bar$new(total = periods)
+  
   for(period in 1:periods) {
+    pb$tick()
     result = function() { fetch(index, start, start + 364)}
     error = inherits(try(result(), silent=TRUE), 'try-error')
     if (error) {

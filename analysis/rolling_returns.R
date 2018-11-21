@@ -2,6 +2,14 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 source("../library/download_index_tri.R", chdir=T)
 library(tidyverse)
 
+# Read raw data
+nifty_50 = download_index_tri("NIFTY 50")
+nifty_next_50 = download_index_tri("NIFTY NEXT 50")
+nifty_midcap_100 = download_index_tri("NIFTY MIDCAP 100")
+nifty_smallcap_100 = download_index_tri("NIFTY SMALLCAP 100")
+
+
+# Function to calculate rolling returns 
 rolling_return = function(data, period, label) {
   data %>%
     group_by(y = year(date), m = month(date)) %>%
@@ -13,17 +21,15 @@ rolling_return = function(data, period, label) {
     select(-value)
 }
 
-nifty_50 = download_index_tri("NIFTY 50")
-nifty_next_50 = download_index_tri("NIFTY NEXT 50")
-nifty_midcap_100 = download_index_tri("NIFTY MIDCAP 100")
-nifty_smallcap_100 = download_index_tri("NIFTY SMALLCAP 100")
 
+# Calculate rolling returns from each index
 n50 = rolling_return(nifty_50, 120, "NIFTY 50 TRI")
 nn50 = rolling_return(nifty_next_50, 120, "NIFTY NEXT 50 TRI")
 nm100 = rolling_return(nifty_midcap_100, 120, "NIFTY MIDCAP 100 TRI")
 ns100 = rolling_return(nifty_smallcap_100, 120, "NIFTY SMALLCAP 100 TRI")
 
 
+# Combine rolling returns into single data frame and plot
 n50 %>%
   left_join(nn50, by=c("date")) %>%
   left_join(nm100, by=c("date")) %>%
