@@ -28,20 +28,21 @@ fetch = function(index, from, to) {
     parse()
 }
 
-download = function(index) {
+download_index_tri = function(index) {
   start = as_date("1999-06-30")
   end = today()
   periods = ceiling((end - start) %>% as.numeric() / 364)
   
   df = tibble(date = as_date(NA), value = numeric())  
   for(period in 1:periods) {
-    df = bind_rows(df, fetch(index, start, start + 364))
-    start = start + 365
+    result = function() { fetch(index, start, start + 364)}
+    error = inherits(try(result(), silent=TRUE), 'try-error')
+    if (error) {
+      start = start + 365
+    } else {
+      df <- bind_rows(df, result())
+      start = start + 365
+    }
   }
-  
   return(df)
 }
-
-df = download("NIFTY 50")
-
-df
