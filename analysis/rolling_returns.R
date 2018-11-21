@@ -1,8 +1,15 @@
+# This source code is licenced under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-source("../library/download_index_tri.R", chdir=T)
 library(tidyverse)
 
 # Read raw data
+#
+# Example usage of reference functions:
+# source("../reference/download_index_tri.R", chdir=TRUE)
+# nifty_50 = download_index_tri("NIFTY 50")
+
 nifty_50 = download_index_tri("NIFTY 50")
 nifty_next_50 = download_index_tri("NIFTY NEXT 50")
 nifty_midcap_100 = download_index_tri("NIFTY MIDCAP 100")
