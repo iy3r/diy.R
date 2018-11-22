@@ -3,6 +3,7 @@
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(tidyverse)
+library(plotly)
 
 # Read raw data
 #
@@ -10,10 +11,10 @@ library(tidyverse)
 # source("../reference/download_index_tri.R", chdir=TRUE)
 # nifty_50 = download_index_tri("NIFTY 50")
 
-nifty_50 = download_index_tri("NIFTY 50")
-nifty_next_50 = download_index_tri("NIFTY NEXT 50")
-nifty_midcap_100 = download_index_tri("NIFTY MIDCAP 100")
-nifty_smallcap_100 = download_index_tri("NIFTY SMALLCAP 100")
+nifty_50 = read_csv("../datasets/nifty_50_tri.csv")
+nifty_next_50 = read_csv("../datasets/nifty_next_50_tri.csv")
+nifty_midcap_100 = read_csv("../datasets/nifty_midcap_100_tri.csv")
+nifty_smallcap_100 = read_csv("../datasets/nifty_smallcap_100_tri.csv")
 
 
 # Function to calculate rolling returns 
@@ -36,14 +37,20 @@ nm100 = rolling_return(nifty_midcap_100, 120, "NIFTY MIDCAP 100 TRI")
 ns100 = rolling_return(nifty_smallcap_100, 120, "NIFTY SMALLCAP 100 TRI")
 
 
-# Combine rolling returns into single data frame and plot
-n50 %>%
+# Combine rolling returns into single data frame
+combined = n50 %>%
   left_join(nn50, by=c("date")) %>%
   left_join(nm100, by=c("date")) %>%
   left_join(ns100, by=c("date")) %>%
-  gather(index, ann_return, -date) %>%
+  gather(index, ann_return, -date)
+
+
+# Prepare the plot
+g = combined %>%
   ggplot(aes(x=date, y=ann_return, color=index)) +
   geom_line() +
   ggtitle("10y rolling returns") + 
   theme(legend.position="bottom",legend.direction="horizontal")
 
+# Show interactive plot
+ggplotly(g)
