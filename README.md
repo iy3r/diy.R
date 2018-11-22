@@ -1,4 +1,4 @@
-# [diy.R](https://github.com/uptickr/diy.R) &middot; [GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
+# [diy.R](https://github.com/uptickr/diy.R) &middot; ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 An open-research initiative for DIY investors using the R language.
 
