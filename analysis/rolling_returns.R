@@ -57,8 +57,7 @@ combined %>%
     above_10_perc = sum(ann_return >= 10) / length(ann_return) * 100,
     above_15_perc = sum(ann_return >= 15) / length(ann_return) * 100,
     above_20_perc = sum(ann_return >= 20) / length(ann_return) * 100,
-    ) %>%
-  arrange(desc(median)) %>% write_csv("temp.csv")
+    )
 
 
 # Prepare the plot
