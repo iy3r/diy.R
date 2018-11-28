@@ -43,15 +43,35 @@ combined = n50 %>%
   left_join(nn50, by=c("date")) %>%
   left_join(nm100, by=c("date")) %>%
   left_join(ns100, by=c("date")) %>%
-  gather(index, ann_return, -date)
+  gather(index, ann_return, -date) %>%
+  drop_na()
+
+
+# View as table
+combined %>%
+  group_by(index) %>%
+  summarise(
+    median = median(ann_return),
+    min = min(ann_return),
+    max = max(ann_return),
+    above_10_perc = sum(ann_return >= 10) / length(ann_return) * 100,
+    above_15_perc = sum(ann_return >= 15) / length(ann_return) * 100,
+    above_20_perc = sum(ann_return >= 20) / length(ann_return) * 100,
+    ) %>%
+  arrange(desc(median)) %>% write_csv("temp.csv")
 
 
 # Prepare the plot
 g = combined %>%
   ggplot(aes(x=date, y=ann_return, color=index)) +
   geom_line() +
-  ggtitle("10y rolling returns") + 
+  ggtitle("10 year annualized rolling returns") + 
+  labs(x = "Date", y = "Annualized Return", color="Index") +
+  theme_minimal() +
   theme(legend.position="bottom",legend.direction="horizontal")
 
-# Show interactive plot
+# View plot
+g
+
+# View as interactive plot
 ggplotly(g)
